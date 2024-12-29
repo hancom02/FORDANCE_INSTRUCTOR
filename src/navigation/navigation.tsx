@@ -11,6 +11,7 @@ import LoginScreen from '../screens/login/view/login_screen';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AddSessionScreen from '../screens/add_session/view/add_session_screen';
 import Sessionscreen from '../screens/session/view/session_screen';
+import AddClassScreen from '../screens/add_class/view/add_class_screen';
 
 const Stack = createNativeStackNavigator();
 
@@ -48,6 +49,10 @@ export default function Navigation() {
         <Stack.Screen
           name="ClassScreen"
           component={ClassScreen}
+        />
+        <Stack.Screen
+          name="AddClassScreen"
+          component={AddClassScreen}
         />
         <Stack.Screen 
           name='AddSessionScreen'
