@@ -1,4 +1,7 @@
 {
   "name": "FORDANCE_INSTRUCTOR",
-  "displayName": "FORDANCE_INSTRUCTOR"
+  "displayName": "FORDANCE_INSTRUCTOR",
+  "expo": {
+    "plugins": ["expo-image-picker"]
+  }
 }
