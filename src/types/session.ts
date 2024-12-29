@@ -1,4 +1,4 @@
-interface Session {
+interface ISession {
     id?: string;  
     instructor_id: string;
     class_id: string;
