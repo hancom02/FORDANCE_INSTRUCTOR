@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet } from 'react-native';
+import { View, TextInput, Text, StyleSheet, InputModeOptions } from 'react-native';
 
 const EditableText = ({ 
   title, 
   placeHolder = 'Enter text here', 
   isMutiline = false,
   numberOfLines = 1,
-  onTextChange  }) => {
+  maxLength = 400,
+  inputMode = 'text' as InputModeOptions,
+  onTextChange  
+}) => {
   const [text, setText] = useState('');
 
   const handleTextChange = (newText) => {
@@ -23,6 +26,8 @@ const EditableText = ({
         placeholder={placeHolder}        
         multiline={isMutiline}
         numberOfLines={numberOfLines}
+        maxLength={maxLength}
+        inputMode={inputMode}
       />
     </View>
   );
