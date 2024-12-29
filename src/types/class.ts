@@ -1,5 +1,5 @@
-interface Class {
-    id: string;  
+interface IClass {
+    id?: string;  
     instructor_id: string;
     instructor_username: string;
     class_name: string;
@@ -8,5 +8,6 @@ interface Class {
     image_cover_url: string;
     what_learn: string;    
     what_prepare: string;
+    session_count: number;
     [key: string]: any;
 }
