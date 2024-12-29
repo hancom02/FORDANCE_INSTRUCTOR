@@ -88,7 +88,7 @@ const HomeScreen = () => {
     }
 
     const handleNavPostProgram = () => {
-        navigation.navigate('PostProgramFirst');
+        navigation.navigate('AddClassScreen');
     }
 
     return (
