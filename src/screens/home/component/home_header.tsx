@@ -4,6 +4,7 @@ import MyColor from "../../../constants/color";
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { useState } from "react";
+import SizedBox from "../../../components/size_box/size_box";
 
 // import MaterialIcons from 'react-native-material-icons';
 
@@ -94,6 +95,7 @@ const HomeHeader = (props) => {
                                             </View>
                                             <Text style={styles.textDelete}>SESSION</Text>
                                         </TouchableOpacity>
+                                        <SizedBox height={10} />
                                         <TouchableOpacity style={styles.deleteModal} onPress={onPressPostProgram}>
                                             <View style={{ position: 'relative' }}>
                                                 <Icon name="book" size={16} color="black" />
