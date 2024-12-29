@@ -106,7 +106,7 @@ const AddSessionScreen = (props) => {
         console.log('Video URL:', videoUrl);
         console.log('Thumbnail URL:', thumnailUrl);
 
-        const newSession: Session = {
+        const newSession: ISession = {
           class_id: selectedClass?.id || '',
           instructor_id: uuid,
           session_name: inputText,
