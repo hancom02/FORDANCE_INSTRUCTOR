@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import PropTypes from 'prop-types';
 
 interface SessionScreenProps {
-    session: Session;   // Prop session có kiểu là Session
+    session: ISession;   
   }
 
 const Sessionscreen = ({session} : SessionScreenProps) => {
@@ -18,16 +18,6 @@ const Sessionscreen = ({session} : SessionScreenProps) => {
         </SafeAreaView>
     );
 };
-
-Sessionscreen.propTypes = {
-    // session: PropTypes.shape({
-    //   title: PropTypes.string.isRequired,   // Giả sử title là string và là bắt buộc
-    //   date: PropTypes.string.isRequired,    // Giả sử date là string và là bắt buộc
-    //   description: PropTypes.string,        // description là optional
-    //   id: PropTypes.number,                 // Giả sử id là number
-    // }).isRequired,
-    session: Session
-  };
 
 export default Sessionscreen;
 
