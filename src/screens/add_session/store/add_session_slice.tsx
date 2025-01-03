@@ -11,7 +11,7 @@ export const useAddSession = create(
     //   isLogin: undefined, 
     //   email: '',
       error: undefined,    
-      getClass: async (instructorId: string): Promise<Class[] | null> => {
+      getClass: async (instructorId: string): Promise<IClass[] | null> => {
         try {
           console.log('Fetching sessions for instructor:', instructorId);
 
@@ -28,7 +28,7 @@ export const useAddSession = create(
             throw new Error(classError.message);
           }
           console.log('getClass:', classData);
-          return classData as Class[];
+          return classData as IClass[];
         } catch (err) {
           throw new Error(err.message);
         }
@@ -53,7 +53,7 @@ export const useAddSession = create(
           }
           return data;
       },
-      addSession: async (session: Session): Promise<Session | null> => {
+      addSession: async (session: ISession): Promise<ISession | null> => {
         const { data, error } = await supabase
             .from('sessions')
             .insert([session])  

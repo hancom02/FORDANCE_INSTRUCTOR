@@ -1,7 +1,6 @@
 import { View, Text, ScrollView, StyleSheet, KeyboardAvoidingView, Alert, ActivityIndicator } from "react-native";
 import MyAppBar from "../../../components/app_bar/app_bar";
 import MyColor from "../../../constants/color";
-import Icon from 'react-native-vector-icons/FontAwesome';
 import { Dropdown } from 'react-native-element-dropdown';
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/core";
@@ -12,6 +11,7 @@ import SizedBox from "../../../components/size_box/size_box";
 import BottomButton from "../../../components/button/bottom_button";
 import VideoPickerOld from "../../../components/picker/video_picker_old";
 import ImagePicker from "../../../components/picker/image_picker";
+import DocumentPicker from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
 import { getImageUrl, getVideoUrl, supabase, uploadImage, uploadVideo } from "../../../supabase_config/supabase";
 import { decode } from "base64-arraybuffer";
@@ -19,7 +19,7 @@ import { EStatus } from "../../../types/status_enum";
 
 const AddSessionScreen = (props) => {
     const {session} = props;
-    const [classList, setClassList] = useState<Class[]>([]);
+    const [classList, setClassList] = useState<IClass[]>([]);
     const [enumLevelList, setEnumLevelList] = useState<string[]>([]);
     const [enumGenreList, setEnumGenreList] = useState<string[]>([]);
 
@@ -28,7 +28,7 @@ const AddSessionScreen = (props) => {
     const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
     const [selectedImage, setselectedImage] = useState<string | null>(null);
 
-    const [selectedClass, setSelectedClass] = useState<Class>();
+    const [selectedClass, setSelectedClass] = useState<IClass>();
     const [isFocusClass, setIsFocusClass] = useState(false);
     const [selectedLevel, setSelectedLevel] = useState('');
     const [isFocusLevel, setIsFocusLevel] = useState(false);
@@ -72,6 +72,7 @@ const AddSessionScreen = (props) => {
     // console.log('Formatted class list:', formattedClassList);
     // console.log('Enum level list:', enumLevelList);
     // console.log('Enum genre list:', enumGenreList);
+    console.log('Selected level:', selectedLevel);
 
     const handleVideoSelected = (uri) => {
       setSelectedVideo(uri);
@@ -242,12 +243,12 @@ const AddSessionScreen = (props) => {
                   <View style={styles.level_container}>
                     <Text style={styles.title}>Level</Text>
                     <Dropdown
-                        style={[styles.dropdown, isFocusLevel && { borderColor: 'blue' }]}
+                        style={[styles.dropdown, selectedClass?.level !== 'mutigenre' && styles.disableColor, isFocusLevel && { borderColor: 'blue' }]}
                         placeholderStyle={styles.placeholderStyle}
                         selectedTextStyle={styles.selectedTextStyle}
                         inputSearchStyle={styles.inputSearchStyle}
                         iconStyle={styles.iconStyle}
-                        data={selectedClass?.level !== 'mutivevel' ? enumLevelList : selectedClass.level}
+                        data={selectedClass?.level == 'mutilevel' ? enumLevelList : enumLevelList}
                         search
                         maxHeight={300}
                         labelField="value"
@@ -269,12 +270,12 @@ const AddSessionScreen = (props) => {
                     <View style={styles.genre_container}>
                       <Text style={styles.title}>Genre</Text>
                       <Dropdown
-                          style={[styles.dropdown, isFocusGenre && { borderColor: 'blue' }]}
+                          style={[styles.dropdown, selectedClass?.genre !== 'mutigenre' && styles.disableColor,  isFocusGenre && { borderColor: 'blue' }]}
                           placeholderStyle={styles.placeholderStyle}
                           selectedTextStyle={styles.selectedTextStyle}
                           inputSearchStyle={styles.inputSearchStyle}
                           iconStyle={styles.iconStyle}
-                          data={enumGenreList}
+                          data={selectedClass?.genre == 'mutigenre' ? enumGenreList : enumGenreList}
                           search
                           maxHeight={300}
                           labelField="value"
@@ -335,6 +336,9 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         paddingHorizontal: 8,
       },
+      disableColor: {
+        backgroundColor: MyColor.lightGrey
+    },
       icon: {
         marginRight: 5,
       },
