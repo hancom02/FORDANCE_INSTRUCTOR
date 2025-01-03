@@ -4,8 +4,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useState } from "react";
 
 interface LessonMoreCardProps {
-    session: Session;
-    handleNav: () => void;
+    session: ISession;
+    handleNav?: () => void;
     onClose: () => void;
 }
 

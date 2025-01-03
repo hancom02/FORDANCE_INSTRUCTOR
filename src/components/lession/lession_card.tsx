@@ -34,7 +34,7 @@ import {
               style={styles.textLessonName}>
               {session.session_name}
             </Text>
-            <Text style={styles.textTime}>{session.duration}</Text>
+            {/* <Text style={styles.textTime}>{session.duration}</Text> */}
           </View>
         </View>
         <TouchableOpacity

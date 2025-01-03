@@ -3,6 +3,7 @@ import { View, TextInput, Text, StyleSheet, InputModeOptions } from 'react-nativ
 
 const EditableText = ({ 
   title, 
+  content = '',
   placeHolder = 'Enter text here', 
   isMutiline = false,
   numberOfLines = 1,
@@ -10,7 +11,7 @@ const EditableText = ({
   inputMode = 'text' as InputModeOptions,
   onTextChange  
 }) => {
-  const [text, setText] = useState('');
+  const [text, setText] = useState(content);
 
   const handleTextChange = (newText) => {
     setText(newText);
