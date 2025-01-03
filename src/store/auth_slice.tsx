@@ -11,6 +11,8 @@ export const useAuth = create(
       isLogin: undefined, 
       email: '',
       uuid: '',
+      username: '',
+      avatar_url: '',
       error: undefined,
       signIn: async (email, password) => {
         try {
@@ -52,6 +54,8 @@ export const useAuth = create(
               state.isLogin = true;
               state.email = authData.user.email;
               state.uuid = authData.user.id;
+              state.username = getUserData[0].username;
+              state.avatar_url = getUserData[0].avatar_url;
             });
             console.log(' authData.user.id: ' + authData.user.id);  
           } else {
@@ -85,9 +89,9 @@ export const useAuth = create(
 
           const { error: insertError } = await supabase.from('users').insert([
             {
-              id: data.user.id, 
-              created_at: data.user.created_at || new Date(), 
-              email: data.user.email,
+              id: data?.user?.id || '', 
+              created_at: data?.user?.created_at || new Date(), 
+              email: data?.user?.email || '',
               password: '', 
               username: username, 
               role: 'student', 
@@ -114,6 +118,9 @@ export const useAuth = create(
           set((state) => {
             state.isLogin = false;
             state.gEmail = '';
+            state.uuid = '';
+            state.username = '';
+            state.avatar_url = '';
           });
         } catch (err) {
           throw new Error(err.message);
