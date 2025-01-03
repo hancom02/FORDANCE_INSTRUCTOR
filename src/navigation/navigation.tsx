@@ -12,6 +12,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AddSessionScreen from '../screens/add_session/view/add_session_screen';
 import Sessionscreen from '../screens/session/view/session_screen';
 import AddClassScreen from '../screens/add_class/view/add_class_screen';
+import CommunityScreen from '../screens/community/view/community_screen';
+import AddSessionClassScreen from '../screens/add_session_class/view/add_session_class_screen';
+import SettingScreen from '../screens/setting/view/setting_screen';
 
 const Stack = createNativeStackNavigator();
 
@@ -26,6 +29,15 @@ function BottomTab() {
             options={({ route }) => ({
                 tabBarIcon: ({ focused }) => (
                     <Icon name="home" size={24} color={focused ? MyColor.primary : 'black'} />
+                ),
+            })}
+        />
+        <Tab.Screen
+            name="SettingScreen"
+            component={SettingScreen}
+            options={({ route }) => ({
+                tabBarIcon: ({ focused }) => (
+                    <Icon name="user" size={24} color={focused ? MyColor.primary : 'black'} />
                 ),
             })}
         />
@@ -59,9 +71,18 @@ export default function Navigation() {
           component={AddSessionScreen}
         />
         <Stack.Screen 
+          name='AddSessionClassScreen'
+          component={AddSessionClassScreen}
+        />
+        <Stack.Screen 
           name='SessionScreen'
           component={Sessionscreen}
         />
+        <Stack.Screen 
+          name='CommunityScreen'
+          component={CommunityScreen}
+        />
+        
       </Stack.Navigator>
     </NavigationContainer>
   );
