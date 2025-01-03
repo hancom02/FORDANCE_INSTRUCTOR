@@ -11,7 +11,7 @@ export const useInstructorData = create(
     //   isLogin: undefined, 
     //   email: '',
       error: undefined,    
-      getClassByInstructor: async (instructorId: string): Promise<Class[] | null> => {
+      getClassByInstructor: async (instructorId: string): Promise<IClass[] | null> => {
         try {
           console.log('Fetching sessions for instructor:', instructorId);
 
@@ -31,7 +31,7 @@ export const useInstructorData = create(
           throw new Error(err.message);
         }
       },
-      getSessionByInstructor: async (instrutorId: string): Promise<Session[] | null> => {
+      getSessionByInstructor: async (instrutorId: string): Promise<ISession[] | null> => {
         try {
           console.log('Fetching sessions for instructor:', instrutorId);
 
@@ -49,7 +49,7 @@ export const useInstructorData = create(
             });
             throw new Error(sessionError.message);
           }
-          return sessionData as Session[];
+          return sessionData as ISession[];
         } catch (err) {
           throw new Error(err.message);
         }

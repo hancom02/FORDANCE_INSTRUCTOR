@@ -1,5 +1,5 @@
 import { ActivityIndicator, Dimensions, FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import HomeHeader from "../component/home_header";
 import LessonCard from "../../../components/lession/lession_card";
@@ -7,17 +7,20 @@ import LessonMoreCard from "../../../components/lession/lession_more_card";
 import ClassWiderCard from "../../../components/class/class_wider_card";
 import { useInstructorData } from "../store/home_slice";
 import { useAuth } from "../../../store/auth_slice";
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import MyColor from "../../../constants/color";
 
 const MyLessons = "My Lessons";
 const MyPrograms = "My Programs"
 
 const HomeScreen = () => {
-
+    // const route = useRoute<RouteProp<{ params: { reloading: boolean } }, 'params'>>();
+    // const route = useRoute();
+    const [loading, setLoading] = useState(false);
+    // const reloading = route.params?.reloading || false;
+    
     const [classes, setClasses] = useState(null);
     const [sessions, setSessions] = useState(null);
-    const [loading, setLoading] = useState(false);
 
     const navigation = useNavigation();
     const {uuid} = useAuth();
@@ -40,11 +43,17 @@ const HomeScreen = () => {
 
     useEffect(() => {
         console.log('useEffect triggered');
-        setLoading(true);
+        // setLoading(true);
 
         fetchDataOutsideEffect();
-        setLoading(false);
+        // setLoading(false);
     }, []);
+
+    useFocusEffect(
+        React.useCallback(() => {
+            fetchDataOutsideEffect();  // Gọi lại dữ liệu mỗi khi màn hình Home được focus lại
+        }, [])
+    );
 
     console.log("MY SESSIONS: ", sessions);
     console.log("MY CLASSES: ", classes);
@@ -73,14 +82,8 @@ const HomeScreen = () => {
         navigation.navigate('SessionScreen', { session });
     }
 
-    const handleNavDetailInstructorProgram = (
-        programData
-    ) => {
-        // console.log("PROGRAM DATA AFTER PROPS FROM LIBRARY MAIN VIEW: ", programData);
-        navigation.navigate('ClassScreen', {
-            // tabBarVisible: false,
-            // program: programData
-        });
+    const handleNavDetailInstructorProgram = (class_id) => {
+        navigation.navigate('ClassScreen', {class_id});
     }
 
     const handleNavPostLesson = () => {
@@ -146,9 +149,7 @@ const HomeScreen = () => {
                                     <View key={index} style={{ marginBottom: 24, width: '100%' }}>
                                         <ClassWiderCard
                                             classData={item}
-                                            handleNav={() => handleNavDetailInstructorProgram(
-                                                // classData = item
-                                            )}
+                                            handleNav={() => handleNavDetailInstructorProgram(item.id)}
                                         />
                                     </View>
                                 }
