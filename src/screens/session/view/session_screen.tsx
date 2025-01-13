@@ -127,7 +127,10 @@ const Sessionscreen = () => {
       setSelectedImage(uri);
     }
     const handleNavStudentVideos = () => {
-      // navigation.navigate('StudentVideos', {joinedDataList});
+      // navigation.navigate('StudentListSession', {joinedDataList});
+    }
+    const handleNavStudentList = () => {
+      navigation.navigate('StudentListSession', {joinedDataList});
     }
     const handleNavigateCommunityDetail = () => {
       navigation.navigate('CommunityScreen', {session_id: session.id});
@@ -322,7 +325,7 @@ const Sessionscreen = () => {
                 <View>
                   <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline'}}>
                     <Text style={styles.title}>Students</Text>
-                    <TextButton title="See all" onPress={() => {}} />
+                    <TextButton title="See all" onPress={handleNavStudentList} />
                   </View>
                   {joinedDataList.length == 0 ? 
                   <Text>There are no student</Text> :

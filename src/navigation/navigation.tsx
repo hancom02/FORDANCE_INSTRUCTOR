@@ -15,6 +15,7 @@ import AddClassScreen from '../screens/add_class/view/add_class_screen';
 import CommunityScreen from '../screens/community/view/community_screen';
 import AddSessionClassScreen from '../screens/add_session_class/view/add_session_class_screen';
 import SettingScreen from '../screens/setting/view/setting_screen';
+import StudentListSession from '../screens/student_list_session/view/student_list_session_screen';
 
 const Stack = createNativeStackNavigator();
 
@@ -77,6 +78,10 @@ export default function Navigation() {
         <Stack.Screen 
           name='SessionScreen'
           component={Sessionscreen}
+        />
+        <Stack.Screen 
+          name='StudentListSession'
+          component={StudentListSession}
         />
         <Stack.Screen 
           name='CommunityScreen'
