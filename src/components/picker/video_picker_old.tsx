@@ -5,7 +5,10 @@ import DocumentPicker from 'react-native-document-picker';
 import {launchImageLibrary} from 'react-native-image-picker';
 import MyColor from '../../constants/color';
 
-const VideoPickerOld = ({onVideoSelected}) => {
+const VideoPickerOld = ({
+  onVideoSelected, 
+  title = 'Choose video'
+}) => {
   const [video, setVideo] = useState('');
 
   const handleChooseVideo = async () => {
@@ -91,7 +94,7 @@ const VideoPickerOld = ({onVideoSelected}) => {
   return (
     <View style={styles.container}>
       {video && <Image source={{ uri: video }} style={{ width: '80%', height: '50%', marginBottom: 8}} resizeMode='contain' />}
-      <Button title="Choose video" onPress={handleChooseVideo} />
+      <Button title={title} onPress={handleChooseVideo} />
     </View>
   );
 };
