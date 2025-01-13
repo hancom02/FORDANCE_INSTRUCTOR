@@ -15,6 +15,11 @@ import StudentTable from "./student_table";
 import CommentCard from "../../../components/comment/comment_card";
 import BottomButton from "../../../components/button/bottom_button";
 import { ActivityIndicator } from "react-native-paper";
+import { EStatus } from "../../../types/status_enum";
+import VideoPickerOld from "../../../components/picker/video_picker_old";
+import UploadVideoToSupabase from "../../../utils/update_video_util";
+import UploadImageToSupabase from "../../../utils/update_image_util";
+import ImagePicker from "../../../components/picker/image_picker";
 
 const Sessionscreen = () => {
     const route = useRoute<RouteProp<{ params: { session: ISession } }, 'params'>>();
@@ -51,8 +56,11 @@ const Sessionscreen = () => {
     const [isFocusGenre, setIsFocusGenre] = useState(false);
 
     const [sessionName, setSessionName] = useState('');
+    const [selectedVideo, setSelectedVideo] = useState('');
+    const [selectedImage, setSelectedImage] = useState('');
     const [loading, setLoading] = useState(false);
     const [reloading, setReloading] = useState(false);
+    const isCanEdit = session.status === EStatus.Waiting ? true : false;
 
     const fetchClassData = async () => {
         await fetchClass(session.class_id).then((data) => {
@@ -112,6 +120,12 @@ const Sessionscreen = () => {
     const handleTextChange = (text) => {
       setSessionName(text);
     };
+    const handleChoseVideo = (uri) => {
+      setSelectedVideo(uri);
+    }
+    const handleChooseThumnail = (uri) => {
+      setSelectedImage(uri);
+    }
     const handleNavStudentVideos = () => {
       // navigation.navigate('StudentVideos', {joinedDataList});
     }
@@ -123,7 +137,16 @@ const Sessionscreen = () => {
 
       setLoading(true);
 
-      await updateSession(session.id, sessionName, selectedLevel, selectedGenre).then((data) => {
+      let videoUrl = session.video_url;
+      if (selectedVideo && selectedVideo !== session.video_url) {
+        videoUrl = await UploadVideoToSupabase(selectedVideo, uuid);
+      }
+      let thumbnailUrl = session.thumbnail_url;
+      if (selectedImage && selectedImage !== session.thumbnail_url) {
+        thumbnailUrl = await UploadImageToSupabase(selectedImage, uuid);
+      };
+
+      await updateSession(session.id, sessionName, selectedLevel, selectedGenre, videoUrl, thumbnailUrl).then((data) => {
         Alert.alert('Save change successfully!');
 
         navigation.setParams({ reloading: true });
@@ -134,11 +157,28 @@ const Sessionscreen = () => {
 
       setLoading(false);
     };
+    const isFormValid = () => {
+      if (!sessionName) {
+        return false;
+      }
+      if (!selectedVideo) {
+        return false;
+      }
+      if (!selectedImage) {
+        return false;
+      }
+      if (!selectedLevel) {
+        return false;
+      }
+      if (!selectedGenre) {
+        return false;
+      }
+    }
 
     return (
         <View style={styles.container}>
             <MyAppBar title="SESSION DETAIL" handleGoBack={handleGoBack} />
-            {loading ? <ActivityIndicator color={MyColor.primary} /> :
+            {loading ? <View style={{flex: 1, justifyContent: 'center', alignContent: 'center', alignItems: 'center'}}><ActivityIndicator color={MyColor.primary} /></View> :
             <ScrollView style={styles.scrollContainer}>
                 <Text style={styles.title}>Class</Text>
                 <Dropdown
@@ -166,6 +206,7 @@ const Sessionscreen = () => {
                     title='Session Name' 
                     onTextChange={handleTextChange} 
                     content={session.session_name}
+                    editable={isCanEdit}
                 />
                 <View style={styles.level_genre_container}>
                   {/* LEVEL */}
@@ -195,7 +236,7 @@ const Sessionscreen = () => {
 
                             console.log('Selected level:', item.value);
                         }}
-                        disable={classData?.level !== 'mutilevel'}
+                        disable={isCanEdit ? false : classData?.level !== 'mutilevel'}
                     />
                     </View>
                     {/* GENRE */}
@@ -227,12 +268,12 @@ const Sessionscreen = () => {
                               console.log('Selected genre:', item.value);
 
                           }}
-                          disable={classData?.genre !== 'mutigenre'}
+                          disable={isCanEdit ? false : classData?.genre !== 'mutigenre'}
                       />
                     </View>
                 </View>
                 <SizedBox height={32}/>
-                <Video 
+                <Video
                   source={{uri: session.video_url}}   // Can be a URL or a local file.
                   ref={playerRef}                                      
                   onBuffer={() => {}}                // Callback when remote video is buffering
@@ -241,6 +282,10 @@ const Sessionscreen = () => {
                   controls={true}             
                   style={styles.backgroundVideo}
                 />
+                <SizedBox/>
+                <VideoPickerOld onVideoSelected={handleChoseVideo} title="Choose other video?"/>
+                <SizedBox height={32}/>
+                <ImagePicker onImageSelected={handleChooseThumnail} imageUrl={session.thumbnail_url}/>
 
                 {/* RESULT VIDEOS */}
                 <SizedBox height={32}/>
@@ -297,7 +342,7 @@ const Sessionscreen = () => {
                 </View>
                 <SizedBox height={140}/>
               </ScrollView> }
-              <BottomButton title="Save change" onPress={handleSaveChangeSession} />
+              {isCanEdit && <BottomButton title="Save change" onPress={handleSaveChangeSession} />}
         </View>
     );
 };
