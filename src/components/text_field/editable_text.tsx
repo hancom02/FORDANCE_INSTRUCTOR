@@ -9,6 +9,7 @@ const EditableText = ({
   numberOfLines = 1,
   maxLength = 400,
   inputMode = 'text' as InputModeOptions,
+  editable = true,
   onTextChange  
 }) => {
   const [text, setText] = useState(content);
@@ -29,6 +30,7 @@ const EditableText = ({
         numberOfLines={numberOfLines}
         maxLength={maxLength}
         inputMode={inputMode}
+        editable={editable}
       />
     </View>
   );
