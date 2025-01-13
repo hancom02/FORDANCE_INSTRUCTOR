@@ -3,7 +3,7 @@ import { View, Button, Image, StyleSheet, PermissionsAndroid } from 'react-nativ
 import DocumentPicker from 'react-native-document-picker';
 import MyColor from '../../constants/color';
 
-const ImagePicker = ({onImageSelected}) => {
+const ImagePicker = ({onImageSelected, imageUrl = ''}) => {
   const [image, setImage] = useState('');
 
   const handleChooseImage = async () => {
@@ -69,6 +69,7 @@ const ImagePicker = ({onImageSelected}) => {
   return (
     <View style={styles.container}>
       {image && <Image source={{ uri: image }} style={styles.image} resizeMode='center' />}
+      {!image && imageUrl.length != 0 && <Image source={{ uri: imageUrl }} style={styles.image} resizeMode='center' />}
       <Button title="Choose Thumnail" onPress={handleChooseImage} />
     </View>
   );
