@@ -10,8 +10,8 @@ import { useAuth } from "../../../store/auth_slice";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import MyColor from "../../../constants/color";
 
-const MyLessons = "My Lessons";
-const MyPrograms = "My Programs"
+const MyLessons = "My Sessions";
+const MyPrograms = "My Classes"
 
 const HomeScreen = () => {
     // const route = useRoute<RouteProp<{ params: { reloading: boolean } }, 'params'>>();
@@ -58,7 +58,7 @@ const HomeScreen = () => {
     console.log("MY SESSIONS: ", sessions);
     console.log("MY CLASSES: ", classes);
 
-    const [content, setContent] = useState("My Lessons");
+    const [content, setContent] = useState(MyPrograms);
 
     const [expandedItem, setExpandedItem] = useState(null);
     const onPressOpenMoreAction = (id) => {
@@ -104,7 +104,26 @@ const HomeScreen = () => {
                 onPressSearch={handleNavSearch}
             />
             <View style={styles.contentContainer}>
-                {content === "My Lessons" &&
+                {content === MyPrograms &&
+                    <View style={styles.manageContainer}>
+                        <Text style={styles.text}>{MyPrograms}</Text>
+                        <View style={styles.programsContainer}>
+                            <FlatList
+                                data={classes}
+                                renderItem={({ item, index }) =>
+                                    <View key={index} style={{ marginBottom: 24, width: '100%' }}>
+                                        <ClassWiderCard
+                                            classData={item}
+                                            handleNav={() => handleNavDetailInstructorProgram(item.id)}
+                                        />
+                                    </View>
+                                }
+                                showsVerticalScrollIndicator={false}
+                            />
+                        </View>
+                    </View>
+                }
+                {content === MyLessons &&
                     <View style={styles.manageContainer}>
                         <Text style={styles.text}>{MyLessons}</Text>
                         {/* <TouchableOpacity onPress={fetchDataOutsideEffect}>
@@ -134,25 +153,6 @@ const HomeScreen = () => {
                                     </View>
                                 }
                                 horizontal={false}
-                                showsVerticalScrollIndicator={false}
-                            />
-                        </View>
-                    </View>
-                }
-                {content === "My Programs" &&
-                    <View style={styles.manageContainer}>
-                        <Text style={styles.text}>{MyPrograms}</Text>
-                        <View style={styles.programsContainer}>
-                            <FlatList
-                                data={classes}
-                                renderItem={({ item, index }) =>
-                                    <View key={index} style={{ marginBottom: 24, width: '100%' }}>
-                                        <ClassWiderCard
-                                            classData={item}
-                                            handleNav={() => handleNavDetailInstructorProgram(item.id)}
-                                        />
-                                    </View>
-                                }
                                 showsVerticalScrollIndicator={false}
                             />
                         </View>
