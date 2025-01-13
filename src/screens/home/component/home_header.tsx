@@ -19,7 +19,7 @@ const HomeHeader = (props) => {
 
     // const MaterialIcons = require('react-native-material-icons').default as React.ElementType;
     
-    const [selectedButton, setSelectedButton] = useState("My Lessons");
+    const [selectedButton, setSelectedButton] = useState("My Classes");
     const [showPopUpPost, setShowPopUpPost] = useState(false);
     const [buttonPosition, setButtonPosition] = useState({ x: 0, y: 0 });
     const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
@@ -51,7 +51,7 @@ const HomeHeader = (props) => {
         setShowPopUpPost(true);
     };
 
-    const renderButton = (buttonName) => {
+    const renderButton = (buttonName : string) => {
         const isSelected = selectedButton === buttonName;
         return (
             <TouchableOpacity
@@ -95,7 +95,7 @@ const HomeHeader = (props) => {
                                             </View>
                                             <Text style={styles.textDelete}>SESSION</Text>
                                         </TouchableOpacity>
-                                        <SizedBox height={10} />
+                                        <SizedBox height={10} width={undefined} backgroundColor={undefined} />
                                         <TouchableOpacity style={styles.deleteModal} onPress={onPressPostProgram}>
                                             <View style={{ position: 'relative' }}>
                                                 <Icon name="book" size={16} color="black" />
@@ -118,8 +118,8 @@ const HomeHeader = (props) => {
             <View style={styles.pageContainer}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                     <View style={styles.buttonContainer}>
-                        {renderButton("My Lessons")}
-                        {renderButton("My Programs")}
+                        {renderButton("My Classes")}
+                        {renderButton("My Sessions")}
                     </View>
                 </ScrollView>
             </View>
