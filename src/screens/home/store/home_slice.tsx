@@ -26,7 +26,7 @@ export const useInstructorData = create(
             });            
             throw new Error(classError.message);
           }
-          return classData as Class[];
+          return classData as IClass[];
         } catch (err) {
           throw new Error(err.message);
         }
