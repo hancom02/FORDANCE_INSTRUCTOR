@@ -57,6 +57,26 @@ export const useClass = create(
           throw new Error(err.message);
         }
       },
+      updateClass: async (class_id: string, user_id: string, classDta: IClass): Promise<IClass | null> => {
+        try {
+            // Cập nhật dữ liệu cho lớp học
+            const { data: classData, error: classError } = await supabase
+                .from('classes')
+                .update(classDta)
+                .eq('id', class_id)
+                .eq('instructor_id', user_id); 
+    
+            if (classError) {
+                // Xử lý lỗi nếu có
+                console.error('Error updating class:', classError);
+                return null;
+            }    
+            return classData; 
+        } catch (error) {
+            console.error('Unexpected error:', error);
+            throw new Error(err.message);
+        }
+    },
     })),
     {
       name: 'class',
