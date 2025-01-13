@@ -145,13 +145,22 @@ export const useSession = create(
             throw new Error(err.message);
         }   
       },
-      updateSession: async (session_id: string, session_name: string, level: string, genre: string): Promise<ISession | null> => {
+      updateSession: async (
+        session_id: string, 
+        session_name: string, 
+        level: string, 
+        genre: string,
+        video_url: string,
+        thumbnail_url: string,
+      ): Promise<ISession | null> => {
         const { data, error } = await supabase
             .from('sessions')
             .update({
               session_name: session_name,
               level: level,
-              genre: genre
+              genre: genre,
+              video_url: video_url,
+              thumbnail_url: thumbnail_url
             })  
             .eq('id', session_id)
             .single(); 
