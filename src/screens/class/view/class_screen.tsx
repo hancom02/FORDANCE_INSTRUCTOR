@@ -1,4 +1,6 @@
 import React, {useEffect, useState} from 'react';
+import RNFS from 'react-native-fs';
+import { decode } from "base64-arraybuffer";
 import {
   FlatList,
   Image,
@@ -7,7 +9,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View, StyleSheet, Dimensions, SafeAreaView
+  View, StyleSheet, Dimensions, SafeAreaView,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
 
 // ICON
@@ -19,6 +23,9 @@ import ProgramDetailHeader from '../component/class_header';
 import LessonCard from '../../../components/lession/lession_card';
 import MyColor from '../../../constants/color';
 import LessonMoreCard from '../../../components/lession/lession_more_card';
+import ImagePicker from '../../../components/picker/image_picker';
+import { supabase } from '../../../supabase_config/supabase';
+import UploadImageToSupabase from '../../../utils/update_image_util';
 
 const aboutInstructor = 'About Instructor';
 const experience = 'Experience';
@@ -37,12 +44,14 @@ const ClassScreen = () => {
 //   });
 
   const {uuid} = useAuth();
-  const {getClass, getSessionOfClass} = useClass();
+  const {getClass, getSessionOfClass, updateClass} = useClass();
 
   const [classData, setClassData] = useState<IClass>();
   const [sessions, setSessions] = useState<ISession[]>([]);
 
   const [isEditing, setIsEditing] = useState(false);
+  const [className, setClassName] = useState('');
+  const [selectedImage, setselectedImage] = useState('');
   const [introduce, setIntroduce] = useState('');
   const [whatLearn, setWhatLearn] = useState('');
   const [whatPrepare, setWhatPrepare] = useState('');
@@ -50,9 +59,13 @@ const ClassScreen = () => {
   const [content, setContent] = useState('Overview'); 
   const [expandedItem, setExpandedItem] = useState(null);
 
+  const [loading, setLoading] = useState(false);
+
   const fetchClass = async () => {
     await getClass(class_id).then((data) => {
         setClassData(data);
+        setClassName(data.class_name);
+        setselectedImage(data.image_cover_url);
         setWhatLearn(data.what_learn);
         setWhatPrepare(data.what_prepare);
     }).catch((err) => {
@@ -68,28 +81,70 @@ const ClassScreen = () => {
   };
 
   useEffect(() => {
+    setLoading(true);
+
     fetchClass();
     fetchSessionClass();
+
+    setLoading(false);
   }, []);
 
   console.log('classData:', classData);
   console.log('sessions:', sessions);
 
   const handleEdit = () => setIsEditing(true);
-  const handleSave = () => {
-    setIsEditing(false);
-    //Goi ham update tai day
+  const handleImageSelected = (uri : string) => {
+    setselectedImage(uri);
+    console.log('Image đã chọn:', uri);
+  };
+  const handleSave = async () => {
+    if(isFormValid()) {
+      setIsEditing(false);
+      setLoading(true);
+    
+      let imageUrl = selectedImage;
+
+      if (selectedImage !== classData?.image_cover_url) {
+        imageUrl = await UploadImageToSupabase(selectedImage, uuid);
+      }
+  
+      const newClassData: IClass = {
+        instructor_id: uuid,
+        instructor_username: classData?.instructor_username ?? '',
+        class_name: className,
+        level: classData?.level ?? '',
+        genre: classData?.genre ?? '',
+        image_cover_url: imageUrl ?? selectedImage,
+        what_learn: whatLearn,
+        what_prepare: whatPrepare,
+        session_count: classData?.session_count ?? 0,
+      }
+  
+      updateClass(class_id, uuid, newClassData)
+      .then((data) => {
+        setLoading(false);
+
+        console.log('Update class:', data);
+        Alert.alert('Class updated successfully');
+      }).catch((error) => {
+          console.error(error);
+          Alert.alert('Failed to update classs');
+      });
+      
+      await fetchClass();
+      
+      setLoading(false);
+    }
   };
   const handleCancel = () => setIsEditing(false);
 
   const onPressOpenMoreAction = (id) => {
     setExpandedItem(id);
-};
-const onPressCloseMoreAction = () => {
-    setExpandedItem(null);
-};
-
-  const handleNavDetailLesson = (session) => {
+  };
+  const onPressCloseMoreAction = () => {
+      setExpandedItem(null);
+  };
+  const handleNavDetailLesson = (session : ISession) => {
     // navigation.navigate('SessionScreen', {isOwner: true, lesson}); //Truyền vào lesson với isOwner = true
     navigation.navigate('SessionScreen', {session});
   };
@@ -99,7 +154,25 @@ const onPressCloseMoreAction = () => {
   const handleAddNewSession = (classData: IClass) => {
     navigation.navigate('AddSessionClassScreen', {classData});
   };
-
+  const isFormValid = () => {
+    if (!className) {
+      Alert.alert("Class is required");
+      return false;
+    }
+    if (!whatLearn) {
+      Alert.alert("Session name is required");
+      return false;
+    }
+    if (!whatPrepare) {
+      Alert.alert("Level is required");
+      return false;
+    }
+    if (!selectedImage) {
+      Alert.alert("Image is required");
+      return false;
+    }
+    return true;
+  }
   return (
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
@@ -117,7 +190,12 @@ const onPressCloseMoreAction = () => {
 
       <ProgramDetailHeader onButtonPress={setContent} />
 
-      <View style={styles.contentContainer}>
+      {loading ? 
+        <View style={{flex: 1, justifyContent: 'center', alignContent: 'center'}}>
+          <ActivityIndicator color={MyColor.primary} size={36} style={{alignSelf: 'center'}}/> 
+        </View>
+        :
+        <View style={styles.contentContainer}>
         {content === 'Overview' && (
           <SafeAreaView>
             <ScrollView
@@ -145,17 +223,37 @@ const onPressCloseMoreAction = () => {
 
               {/* ABOUT INSTRUCTOR */}
               <View style={styles.instructorContainer}>
-                <Text style={styles.titileOverviewText}>{aboutInstructor}</Text>
+                {/* <Text style={styles.titileOverviewText}>{aboutInstructor}</Text> */}
                 <View>
-                  <Text style={styles.textInstructor}>
+                  {/* <Text style={styles.textInstructor}>
                     {classData?.class_name}
-                  </Text>
-                  {classData?.image_cover_url ? (
+                  </Text> */}
+                  
+                  <Text style={styles.titileOverviewText}>Class name</Text>
+                  {isEditing ? (
+                    <TextInput
+                      style={styles.input}
+                      value={className}
+                      onChangeText={setClassName}
+                      // color="black"
+                    />
+                  ) : (
+                    <Text
+                      style={styles.textNomal}
+                      numberOfLines={5}
+                      ellipsizeMode="clip">
+                      {classData?.class_name}
+                    </Text>
+                  )}
+                
+                  {!isEditing ? ( classData?.image_cover_url ? (
                     <Image
                       source={{uri: classData?.image_cover_url}}
                       style={styles.imageInstructor}
                     />
-                  ) : null}
+                  ) : null) : (
+                    <ImagePicker onImageSelected={handleImageSelected} imageUrl={classData?.image_cover_url} />
+                  )}
                 </View>
                 {/* {data?.instructor.prizes ? (
                   <View style={{marginTop: 16}}>
@@ -271,6 +369,8 @@ const onPressCloseMoreAction = () => {
           </View>
         )}
       </View>
+
+      }
     </SafeAreaView>
   );
 };
@@ -292,7 +392,6 @@ const styles = StyleSheet.create({
     left: 16,
     zIndex: 999,
     padding: 10,
-    borderRadius: 5,
     backgroundColor: 'white',
     borderRadius: 50,
   },
