@@ -3,13 +3,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 
 const MyAppBar = (props) => {
-    const {handleGoBack, headerTitle} = props;
+    const {handleGoBack, headerTitle, isShowLeftIcon = true} = props;
 
     return (
         <><View style={styles.header}>
-            <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            {isShowLeftIcon && <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
                 <Icon name="arrow-left" size={20} color="black" />
-            </TouchableOpacity>
+            </TouchableOpacity>}
             <Text style={styles.headerTitle}>{headerTitle}</Text>
         </View><View style={styles.separator} /></>
     )
