@@ -4,6 +4,7 @@ interface ICommentDta {
     session_id: string;
     created_at: string;
     content: string
-    img_ulr: string;
+    img_url: string;
     video_url: string;
+    parent_comment_id?: string;
 }

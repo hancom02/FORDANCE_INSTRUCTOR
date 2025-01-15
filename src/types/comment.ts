@@ -7,4 +7,5 @@ interface IComment {
     content: string
     img_url: string;
     video_url: string;
+    parent_comment_id: string;
 }

@@ -7,5 +7,6 @@ interface IJoin {
     review: string;
     rating: number;
     username: string;
+    teacher_feedback: string;
 
 }
