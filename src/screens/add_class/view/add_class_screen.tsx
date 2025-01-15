@@ -86,7 +86,7 @@ const AddClassScreen = () => {
             setLoading(false);
     
             console.log('New class:', data);
-            Alert.alert('Class added successfully');
+            Alert.alert('Successfully', 'Class added successfully');
         }).catch((error) => {
             console.error(error);
             Alert.alert('Failed to add class');

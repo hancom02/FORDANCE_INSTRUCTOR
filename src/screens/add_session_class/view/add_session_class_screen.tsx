@@ -128,7 +128,7 @@ const AddSessionClassScreen = () => {
           setLoading(false);
 
           console.log('New session:', data);
-          Alert.alert('Session added successfully');
+          Alert.alert('Successfully','Successfully','Session added successfully');
           navigation.goBack();
         }).catch((error) => {
           console.error(error);

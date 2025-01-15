@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   PermissionsAndroid,
+  Keyboard,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -24,6 +25,8 @@ import TextButton from '../../../components/button/text_button';
 import Video from 'react-native-video';
 import SizedBox from '../../../components/size_box/size_box';
 import DocumentPicker from 'react-native-document-picker';
+import { checkStoragePermission, pickImage } from '../../../utils/pick_image_util';
+import UploadImageToSupabase from '../../../utils/update_image_util';
 
 
 const CommunityScreen = () => {
@@ -37,17 +40,25 @@ const CommunityScreen = () => {
     const {getComment, addComment} = useComment();
 
     const [comments, setComments] = useState<IComment[]>([]);
+
     const [replyText, setReplyText] = useState('');
+    const [replyTo, setReplyTo] = useState<string | null>(null); // Lưu parent_comment_id
+
+    const [uri, setUri] = useState('');
     const [image, setImage] = useState('');
     const [imgUrl, setImgUrl] = useState('');
     const [videoUrl, setVideoUrl] = useState('');
 
+    const [loading, setLoading] = useState(false);
+
     const fectchCommentData = async () => { 
-        await getComment(session_id).then((comments) => {
-            setComments(comments);
+        await getComment(session_id)
+        .then((comments) => {
+          const sortedComments = sortComments(comments); // Sắp xếp trước khi hiển thị
+          setComments(sortedComments);
         })
         .catch((err) => {
-            console.log('error in fetchCommentData: ', err);
+          console.log('error in fetchCommentData: ', err);
         });
     }
     const handleGoBack = () => {
@@ -60,130 +71,131 @@ const CommunityScreen = () => {
 
     console.log('comments in community: ', comments);
 
-    const handleOpenImagePicker = async () => {
-        try {
-            const permissionStatus = await PermissionsAndroid.check(
-            PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE
-            );
-            console.log('Permission status:', permissionStatus);
-        
-            if (permissionStatus) {
-            console.log('Storage permission already granted');
-            await pickImage();
-            } else {
-            console.log('Requesting storage permission');
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-                {
-                title: 'Storage Permission',
-                message: 'FORDANCE INSTRUCTOR needs access to your storage.',
-                buttonNeutral: 'Ask Me Later',
-                buttonNegative: 'Cancel',
-                buttonPositive: 'OK',
-                }
-            );
-        
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                console.log('You can access the storage');
-                // Sau khi cấp quyền thành công, tiếp tục chọn video
-                await pickImage();
-            } else {
-                console.log('Storage permission denied');
-            }
-            }
-            } catch (err) {
-                console.error('Permission request error:', err); // In lỗi khi yêu cầu quyền bị lỗi
-            }
-        };
-    
-        const pickImage = async () => {
-        try {
-            const res = await DocumentPicker.pick({
-            type: [DocumentPicker.types.images],
-            });
-    
-            if (res && res[0].uri) {
-            const selectedImage = res[0];
-            if(selectedImage.uri) {
-                setImage(selectedImage.uri);    
-                console.log('Selected image:', selectedImage.uri);
-            }
-            }
-        } catch (err) {
-            if (DocumentPicker.isCancel(err)) {
-            console.log('User cancelled the picker');
-            } else {
-            console.error(err);
-            }
-        }
-        };
+    const handleSelectImage = async () => {
+      const hasPermission = await checkStoragePermission();
+      if (hasPermission) {
+        const selectedImageUri = await pickImage();
+        setUri(selectedImageUri || '');
+      } else {
+        console.log('Storage permission denied');
+      }
+    }
+    const handleRemoveImage = () => {
+      setUri('');
+      setImgUrl('');
+    };
 
-    const onPressSubmit = async () => {        
+    const onPressSubmit = async () => {
+      setLoading(true);
+
+      let url = '';
+      if (uri) {
+        url = await UploadImageToSupabase(uri, uuid);
+        console.log('url ------------------- : ', url);
+      }   
+
         const newComment: ICommentDta = {
             content: replyText,
             session_id: session_id,
             user_id: uuid,
-            img_ulr: '',
-            created_at: '',
-            video_url: ''
+            img_url: url || '',
+            created_at: new Date().toISOString(),
+            video_url: '',
+            parent_comment_id: replyTo ?? undefined,
         };
         const newCommentWithUser: IComment = {
             ...newComment,
             username: username,
             avatar_url: avatar_url,
-            img_url: ''
+            img_url: '',
+            parent_comment_id: newComment.parent_comment_id || '',
         }
-        await addComment(newComment).then((comment) => {
-            setComments([...comments, newCommentWithUser]);
-        }).catch((err) => {
-            console.log('error in addComment: ', err);
+
+        await addComment(newComment)
+        .then((comment) => {
+          const updatedComments = [...comments, newCommentWithUser];
+          setComments(sortComments(updatedComments)); // Sắp xếp lại danh sách
+          setLoading(false);
+          handleRemoveImage();
+        })
+        .catch((err) => {
+          console.log('error in addComment: ', err);
         });
     };
 
-    const onPressReply = () => {
-
+    const onPressReply = (commentId: string) => {
+      setReplyTo(commentId); 
+      Keyboard.dismiss();
     };
 
-//   const {mutate} = useMutation({
-//     mutationFn: createComment,
-//     onSuccess: data => {
-//       console.log({data});
-//     },
-//   });
-
-//   useEffect(() => {
-//     if (_comments) setComments(_comments);
-//   }, [JSON.stringify(_comments)]);
+    const sortComments = (comments: IComment[]): IComment[] => {
+      const commentMap = new Map<string, IComment[]>();
+    
+      // Nhóm các comment reply theo `parent_comment_id`
+      comments.forEach((comment) => {
+        const parentId = comment.parent_comment_id || 'root'; // Nếu không có parent_comment_id thì là comment gốc
+        if (!commentMap.has(parentId)) {
+          commentMap.set(parentId, []);
+        }
+        commentMap.get(parentId)?.push(comment);
+      });
+    
+      // Sắp xếp danh sách theo mối quan hệ parent -> child
+      const sorted: IComment[] = [];
+    
+      const addComments = (parentId: string) => {
+        const replies = commentMap.get(parentId) || [];
+        replies.forEach((reply) => {
+          sorted.push(reply);
+          if (reply.id) { // Kiểm tra nếu `reply.id` không phải là undefined
+            addComments(reply.id);
+          }
+        });
+      };
+    
+      // Thêm tất cả comment gốc (parent_comment_id === 'root') và đệ quy
+      addComments('root');
+    
+      return sorted;
+    };
 
   const renderItemNew = ({item, index}: {item: IComment, index: number}) => {
+    const isReply = !!item.parent_comment_id;
+  
     return (
-      <View style={styles.commentContainerParent}>
+      <View style={[styles.commentContainerParent, isReply && styles.replyIndent]}>
         <View style={styles.commentContainer}>
-          <Image source={{uri: item.avatar_url}} style={styles.avatar} />
+          <Image source={{ uri: item.avatar_url }} style={styles.avatar} />
           <View style={styles.commentContent}>
             <View style={styles.commentHeader}>
               <Text style={styles.commentUser}>{item.username}</Text>
               <Text style={styles.commentText}>{item.content}</Text>
             </View>
-            {item.img_url && 
-            <View>
-              <SizedBox height={4} />
-              <Image resizeMode='cover' resizeMethod='scale' source={{uri: item.img_url}} style={styles.imageContatiner} />
-            </View>
-            }
+            {item.img_url && (
+              <View>
+                <SizedBox height={4} />
+                <Image
+                  resizeMode="cover"
+                  resizeMethod="scale"
+                  source={{ uri: item.img_url }}
+                  style={styles.imageContatiner}
+                />
+              </View>
+            )}
             <View style={styles.replyButton}>
               <TextButton
                 title="Reply"
-                onPress={onPressReply} 
+                onPress={() => onPressReply(item.id || '')}
                 textStyle={styles.replyText}
-                // color={MyColor.gray}               
               />
             </View>
           </View>
         </View>
-        {item.video_url && <View style={styles.videoContainer}>
-          <Video source={{uri: item.video_url}} />
-        </View>}
+        {item.video_url && (
+          <View style={styles.videoContainer}>
+            <Video source={{ uri: item.video_url }} />
+          </View>
+        )}
       </View>
     );
   };
@@ -206,8 +218,8 @@ const CommunityScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <Icon name="arrow-left" size={20} color="black" />
+        <TouchableOpacity onPress={navigation.goBack} style={styles.backButton}>
+          <Icon name="arrow-left" size={20} color="black" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Community</Text>
       </View>
@@ -219,19 +231,47 @@ const CommunityScreen = () => {
       />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.replyInputContainer}>
-        <TextInput
-          style={styles.replyInput}
-          placeholder="Your question..."
-          value={replyText}
-          onChangeText={setReplyText}
-        />
-        <TouchableOpacity style={{marginTop: 20, marginLeft: 16}} onPress={handleOpenImagePicker}>
-            <Icon name="image" size={20} color="black" />
-
-          {/* <Ionicons name="image-outline" size={27} color="black" /> */}
+        style={styles.replyInputContainer}
+      >
+        <View style={{ width: '65%', justifyContent: 'flex-start' }}>
+          <TextInput
+            style={styles.replyInput}
+            multiline
+            numberOfLines={3}
+            placeholder={
+              replyTo ? `Replying to comment #${replyTo}` : 'Your question...'
+            }
+            value={replyText}
+            onChangeText={setReplyText}
+          />
+          {uri && (
+            <View style={{ position: 'relative', marginTop: 8 }}>
+              <Image
+                source={{ uri: uri }}
+                style={styles.imageComment}
+                borderRadius={16}
+                resizeMethod="scale"
+                resizeMode="cover"
+              />
+              <TouchableOpacity
+                style={styles.removeImageButton}
+                onPress={handleRemoveImage}
+              >
+                <Icon name="times-circle" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+        <TouchableOpacity
+          style={{ marginTop: 20, marginLeft: 16 }}
+          onPress={handleSelectImage}
+        >
+          <Icon name="image" size={20} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.replySendButton} onPress={onPressSubmit}>
+        <TouchableOpacity
+          style={styles.replySendButton}
+          onPress={onPressSubmit}
+        >
           <Text style={styles.submitText}>Submit</Text>
         </TouchableOpacity>
       </KeyboardAvoidingView>
@@ -356,6 +396,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   replyInputContainer: {
+    // flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     borderTopWidth: 1,
@@ -364,7 +405,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
   },
   replyInput: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: 'white',
     marginTop: 20,
     borderRadius: 20,
@@ -379,9 +420,28 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderRadius: 20,
   },
+  replyIndent: {
+    marginLeft: 40, // Thụt vào khi là comment reply
+  },
   submitText: {
     color: MyColor.primary,
     textTransform: 'uppercase',
     fontSize: 16,
+  },
+  imageComment: {
+    // flex: 1,
+    borderRadius: 8,
+
+    height: 80,
+    width: 80,
+
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    padding: 4,
   },
 });

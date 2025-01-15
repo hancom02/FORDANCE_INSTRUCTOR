@@ -3,12 +3,12 @@ import MyAppBar from "../../../components/app_bar/app_bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dropdown } from 'react-native-element-dropdown';
 import { useAuth } from "../../../store/auth_slice";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import EditableText from "../../../components/text_field/editable_text";
 import { useSession } from "../store/session_slice";
 import MyColor from "../../../constants/color";
 import SizedBox from "../../../components/size_box/size_box";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/core";
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navigation/core";
 import Video, { VideoRef } from 'react-native-video';
 import TextButton from "../../../components/button/text_button";
 import StudentTable from "./student_table";
@@ -107,6 +107,13 @@ const Sessionscreen = () => {
         fetchCommentsData();
     }, []);
 
+    useFocusEffect(
+      React.useCallback(() => {
+          fetchJoinedStudents();
+          fetchCommentsData();
+      }, [])
+  );
+
     // console.log('classData: ', classData);
     // console.log('Session dta: ', sessionDta);
     console.log('name: ', sessionName);
@@ -127,7 +134,7 @@ const Sessionscreen = () => {
       setSelectedImage(uri);
     }
     const handleNavStudentVideos = () => {
-      // navigation.navigate('StudentListSession', {joinedDataList});
+      navigation.navigate('StudentVideosScreen', {joinedDataList});
     }
     const handleNavStudentList = () => {
       navigation.navigate('StudentListSession', {joinedDataList});
@@ -341,7 +348,7 @@ const Sessionscreen = () => {
                   </View>
                   {commentDataList.length == 0 ? 
                     <Text style={styles.normalText}>There have no comment</Text>
-                  : <CommentCard comments={commentDataList || []} />}
+                  : <CommentCard comments={commentDataList.slice(0, 2) || []} />}
                 </View>
                 <SizedBox height={140}/>
               </ScrollView> }
