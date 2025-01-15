@@ -31,6 +31,7 @@ const ImagePicker = ({onImageSelected, imageUrl = ''}) => {
   
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
           console.log('You can access the storage');
+          // Sau khi cấp quyền thành công, tiếp tục chọn video
           await pickImage();
         } else {
           console.log('Storage permission denied');
