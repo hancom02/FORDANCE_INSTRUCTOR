@@ -24,10 +24,10 @@ const HomeScreen = () => {
 
     const navigation = useNavigation();
     const {uuid} = useAuth();
-    // console.log("UUID: ", uuid);
+    console.log("UUID: ", uuid);
 
     const {getClassByInstructor, getSessionByInstructor, error} = useInstructorData();
-    console.log('getSessionByInstructor ', getSessionByInstructor);
+    // console.log('getSessionByInstructor ', getSessionByInstructor);
 
     const fetchDataOutsideEffect = async () => {
         try {
